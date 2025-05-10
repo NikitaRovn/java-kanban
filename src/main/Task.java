@@ -91,7 +91,7 @@ public class Task {
 
     @Override
     public String toString() {
-        return String.format("Задача ID:%d. %s. Статус: %s. Имеет подзадачи: %b. Является подзадачей задачи ID: %d.%n",
+        return String.format("Задача ID:%d. %s. Статус: %s. Имеет подзадачи (является эпической): %b. Является подзадачей задачи ID: %d.%n",
                 this.id, this.name, this.status, this.isEpic, this.isSubtask ? this.parentTask.id : 0);
     }
 }
