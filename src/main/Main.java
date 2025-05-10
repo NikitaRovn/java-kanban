@@ -16,6 +16,7 @@ public class Main {
             System.out.println("5 - задать новое наименование и описание задаче.");
             System.out.println("6 - удалить задачу по её ID.");
             System.out.println("7 - изменить статус задачи (только не для эпических).");
+            System.out.println("8 - получение списка подзадач эпической задачи.");
             System.out.println("9 - заполнить программу тестовыми данными.");
 
             switch (commandReader()) {
@@ -26,7 +27,11 @@ public class Main {
                 case 5 -> updateTask();
                 case 6 -> removeTask();
                 case 7 -> updateTaskStatus();
+                case 8 -> getSubtask();
                 case 9 -> taskManager.fillTestData();
+                default -> {
+                    return;
+                }
             }
         }
 
@@ -84,5 +89,11 @@ public class Main {
         System.out.println("Ввести новый статус задачи (1 - новая, 2 - в процессе, 3 - завершена):");
         int taskStatus = commandReader();
         System.out.println(taskManager.updateStatusTaskById(taskId, taskStatus));
+    }
+
+    public static void getSubtask() {
+        System.out.println("Ввести ID задачи:");
+        int taskId = commandReader();
+        System.out.println(taskManager.getSubtaskByEpicId(taskId));
     }
 }
