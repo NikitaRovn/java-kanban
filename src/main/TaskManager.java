@@ -1,72 +1,95 @@
 package main;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.Set;
 
 public class TaskManager {
-    HashMap<Integer, Task> tasksList = new HashMap<>();
+    private static int idTaskCounter = 0;
+    private HashMap<Integer, Task> tasks;
 
-    public Task addNewTask(String name, String description) {
-        Task newTask = new Task(name, description);
-        tasksList.put(newTask.getId(), newTask);
-        return newTask;
+    private static int generateUniqueId() {
+        return idTaskCounter++;
     }
 
-    public Collection<Task> getAllTasks() {
-        return tasksList.values();
+    public HashMap<Integer, Task> getAllTasks() {
+        return this.tasks;
     }
 
-    public boolean removeAllTasks() {
-        tasksList.clear();
-        return true;
+    public Task getTaskById(int id) {
+        return this.tasks.get(id);
     }
 
-    public Task getTaskById(int taskId) {
-        return tasksList.get(taskId);
-    }
-
-    public Collection<Task> getSubtaskByEpicId(int epicId) {
-        Task targetTask = getTaskById(epicId);
-        return targetTask.getEpicStatus() ? targetTask.getSubtasks() : null;
-    }
-
-    public Task updateTaskById(int taskId, String newName, String newDescription) {
-        Task targetTask = getTaskById(taskId);
-        targetTask.updateNameAndDescription(newName, newDescription);
-        return targetTask;
-    }
-
-    public Task updateStatusTaskById(int taskId, int statusId) {
-        Task targetTask = getTaskById(taskId);
-        if (!targetTask.getEpicStatus()) {
-            targetTask.updateStatus(statusId);
+    public Set<Integer> getSubtasksById(int id) {
+        Task targetTask = getTaskById(id);
+        if (targetTask instanceof Epic) {
+            return ((Epic) targetTask).getSubtasks();
+        } else {
+            return null;
         }
+    }
+
+    public Task createTask(String name, String description) {
+        return new Task(generateUniqueId(), name, description);
+    }
+
+    public Epic createEpic(String name, String description) {
+        return new Epic(generateUniqueId(), name, description);
+    }
+
+    public Subtask createSubtask(String name, String description, int parentId) {
+        Subtask targetTask = new Subtask(generateUniqueId(), name, description, parentId);
+        Epic parentTask = (Epic) getTaskById(parentId);
+        parentTask.addSubtask(targetTask.id);
         return targetTask;
     }
 
-    public boolean removeTaskById(int taskId) {
-        Task targetTask = getTaskById(taskId);
-        tasksList.remove(taskId, targetTask);
-        return true;
+    public Task updateNameAndDescription(int id, String name, String description) {
+        Task targetTask = getTaskById(id);
+        targetTask.name = name;
+        targetTask.description = description;
+        return targetTask;
     }
 
-    public Task setTaskAsSubtask(int childTaskId, int parentTaskId) {
-        Task childTask = getTaskById(childTaskId);
-        childTask.setAsSubtask(getTaskById(parentTaskId));
-        return childTask;
+    public Task updateStatus(int id, taskStatus status) {
+        Task targetTask = getTaskById(id);
+        if (!(targetTask instanceof Epic)) {
+            targetTask.status = status;
+            if (targetTask instanceof Subtask) {
+                updateStatusEpic(((Subtask) targetTask).parentId);
+            }
+            return targetTask;
+        } else {
+            return null;
+        }
     }
 
-    public boolean fillTestData() {
-        Task testTask1 = addNewTask("Погулять", "Наслаждаясь своим свободным временем и силами на это, взять себя в руки и направится на покорение ближайших и не очень дорог");
-        Task testTask2 = addNewTask("Поспать", "Независимо от того продуктивный это был день или не очень, нужно поспать");
-        Task testTask3 = addNewTask("Учеба", "Заняться прохождением курса обучения Яндекс Практикума");
-        Task testTask4 = addNewTask("Открыть сайт", "Тебе требуется открыть сайт в интернете, например с помощью компьютера или телефона");
-        setTaskAsSubtask(testTask4.getId(), testTask2.getId());
-        Task testTask5 = addNewTask("Залогиниться", "Ввести свой логин и пароль на сайте чтобы пройти аутентификацию");
-        setTaskAsSubtask(testTask5.getId(), testTask2.getId());
-        Task testTask6 = addNewTask("Собраться", "Соберись с мыслями, выкинь всек лишнее из головы и приготовься морально к занятиям");
-        setTaskAsSubtask(testTask6.getId(), testTask2.getId());
+    private void updateStatusEpic(int epicId) {
+        Epic epicTask = (Epic) getTaskById(epicId);
+        if (epicTask.subtasksId.stream().allMatch(taskId -> getTaskById(taskId).status == taskStatus.NEW)) {
+            epicTask.status = taskStatus.NEW;
+        } else if (epicTask.subtasksId.stream().allMatch(taskId -> getTaskById(taskId).status == taskStatus.DONE)) {
+            epicTask.status = taskStatus.DONE;
+        } else {
+            epicTask.status = taskStatus.IN_PROGRESS;
+        }
+    }
 
-        return true;
+    public String deleteAllTasks() {
+        if (this.tasks == null) {
+            return "Удаление не удалось! Список задач не инициализирован.";
+        } else if (this.tasks.isEmpty()) {
+            return "Удаление не удалось! Нет задач для удаления.";
+        } else {
+            return String.format("Удаление успешно! Удалено %d задач.", this.tasks.size());
+        }
+    }
+
+    public String deleteTaskById(int id) {
+        if (this.tasks.containsKey(id)) {
+            this.tasks.remove(id);
+            return String.format("Удаление успешно! Задача с ID: %d - удалена.", id);
+        } else {
+            return String.format("Удаление не удалось! Задача с ID: %d - не найдена.", id);
+        }
     }
 }
