@@ -6,7 +6,7 @@ public class Task {
     private String name;
     private String description;
     private int id;
-    private taskStatus status;
+    private TaskStatus status;
 
     public String getName() {
         return name;
@@ -24,11 +24,11 @@ public class Task {
         this.description = description;
     }
 
-    public taskStatus getStatus() {
+    public TaskStatus getStatus() {
         return status;
     }
 
-    public void setStatus(taskStatus status) {
+    public void setStatus(TaskStatus status) {
         this.status = status;
     }
 
@@ -36,7 +36,7 @@ public class Task {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.status = taskStatus.NEW;
+        this.status = TaskStatus.NEW;
     }
 
     @Override

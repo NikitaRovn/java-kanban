@@ -75,9 +75,9 @@ public class Main {
                     System.out.println("Введите новый статус задачи (1 - NEW, 2 - IN_PROGRESS, 3 - DONE):");
                     int status = commandReader();
                     switch (status) {
-                        case 1 -> System.out.println(taskManager.updateStatus(targetId, taskStatus.NEW));
-                        case 2 -> System.out.println(taskManager.updateStatus(targetId, taskStatus.IN_PROGRESS));
-                        case 3 -> System.out.println(taskManager.updateStatus(targetId, taskStatus.DONE));
+                        case 1 -> System.out.println(taskManager.updateStatus(targetId, TaskStatus.NEW));
+                        case 2 -> System.out.println(taskManager.updateStatus(targetId, TaskStatus.IN_PROGRESS));
+                        case 3 -> System.out.println(taskManager.updateStatus(targetId, TaskStatus.DONE));
                         default -> System.out.println("Неверная команда.");
                     }
                 }
@@ -104,8 +104,8 @@ public class Main {
         Task task1 = taskManager.createTask("Погулять", "Наслаждаясь своим свободным временем и силами на это, взять себя в руки и направится на покорение ближайших и не очень дорог");
         Task task2 = taskManager.createTask("Поспать", "Независимо от того продуктивный это был день или не очень, нужно поспать");
         Epic epic1 = taskManager.createEpic("Учеба", "Заняться прохождением курса обучения Яндекс Практикума");
-        taskManager.createSubtask("Открыть сайт", "Тебе требуется открыть сайт в интернете, например с помощью компьютера или телефона", 2);
-        taskManager.createSubtask("Залогиниться", "Ввести свой логин и пароль на сайте чтобы пройти аутентификацию", 2);
-        taskManager.createSubtask("Собраться", "Соберись с мыслями, выкинь всек лишнее из головы и приготовься морально к занятиям", 2);
+        taskManager.createSubtask("Открыть сайт", "Тебе требуется открыть сайт в интернете, например с помощью компьютера или телефона", epic1.getId());
+        taskManager.createSubtask("Залогиниться", "Ввести свой логин и пароль на сайте чтобы пройти аутентификацию", epic1.getId());
+        taskManager.createSubtask("Собраться", "Соберись с мыслями, выкинь всек лишнее из головы и приготовься морально к занятиям", epic1.getId());
     }
 }
