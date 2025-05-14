@@ -3,7 +3,7 @@ package main;
 import java.util.Set;
 
 public class Epic extends Task {
-    Set<Integer> subtasksId;
+    private Set<Integer> subtasksId;
 
     public Epic(int id, String name, String description) {
         super(id, name, description);

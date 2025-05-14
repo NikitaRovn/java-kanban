@@ -1,7 +1,110 @@
 package main;
 
+import java.util.HashMap;
+import java.util.Scanner;
+import java.util.Set;
+
 public class Main {
+    private static TaskManager taskManager = new TaskManager();
+    private static Scanner scanner = new Scanner(System.in);
+
     public static void main(String[] args) {
 
+
+        while (true) {
+            System.out.println("Список доступных команд:");
+            System.out.println("1 - получить список всех задач.");
+            System.out.println("2 - удалить все задачи.");
+            System.out.println("3 - получить задачу по её ID.");
+            System.out.println("4 - создать новую задачу.");
+            System.out.println("5 - задать новое наименование и описание задаче.");
+            System.out.println("6 - удалить задачу по её ID.");
+            System.out.println("7 - изменить статус задачи (только не для эпических).");
+            System.out.println("8 - получение списка подзадач эпической задачи.");
+            System.out.println("9 - заполнить программу тестовыми данными.");
+
+            switch (commandReader()) {
+                case 1 -> {
+                    HashMap<Integer, Task> tasks = taskManager.getAllTasks();
+                    for (Task task : tasks.values()) {
+                        System.out.println(task);
+                    }
+                }
+                case 2 -> {
+                    System.out.println(taskManager.deleteAllTasks());
+                }
+                case 3 -> {
+                    System.out.println("Введите ID задачи:");
+                    int taskId = commandReader();
+                    System.out.println(taskManager.getTaskById(taskId));
+                }
+                case 4 -> {
+                    System.out.println("Введите тип задачи задачи (1 - обычный, 2 - эпический, 3 - подзадача):");
+                    int taskType = commandReader();
+                    System.out.println("Введите наименование задачи:");
+                    String name = scanner.nextLine();
+                    System.out.println("Введите описание задачи:");
+                    String description = scanner.nextLine();
+                    switch (taskType) {
+                        case 1 -> System.out.println(taskManager.createTask(name, description));
+                        case 2 -> System.out.println(taskManager.createEpic(name, description));
+                        case 3 -> {
+                            System.out.println("Введите ID эпической (родительской) задачи:");
+                            int parentId = commandReader();
+                            System.out.println(taskManager.createSubtask(name, description, parentId));
+                        }
+                    }
+                }
+                case 5 -> {
+                    System.out.println("Введите ID задачи:");
+                    int targetId = commandReader();
+                    System.out.println("Введите наименование задачи:");
+                    String name = scanner.nextLine();
+                    System.out.println("Введите описание задачи:");
+                    String description = scanner.nextLine();
+                    System.out.println(taskManager.updateNameAndDescription(targetId, name, description));
+                }
+                case 6 -> {
+                    System.out.println("Введите ID задачи:");
+                    int targetId = commandReader();
+                    System.out.println(taskManager.deleteTaskById(targetId));
+                }
+                case 7 -> {
+                    System.out.println("Введите ID задачи:");
+                    int targetId = commandReader();
+                    System.out.println("Введите новый статус задачи (1 - NEW, 2 - IN_PROGRESS, 3 - DONE):");
+                    int status = commandReader();
+                    switch (status) {
+                        case 1 -> System.out.println(taskManager.updateStatus(targetId, taskStatus.NEW));
+                        case 2 -> System.out.println(taskManager.updateStatus(targetId, taskStatus.IN_PROGRESS));
+                        case 3 -> System.out.println(taskManager.updateStatus(targetId, taskStatus.DONE));
+                    }
+                }
+                case 8 -> {
+                    System.out.println("Введите ID задачи:");
+                    int targetId = commandReader();
+                    Set<Integer> subtasksId = taskManager.getSubtasksById(targetId);
+                    for (int i : subtasksId) {
+                        System.out.println(taskManager.getTaskById(i));
+                    }
+                }
+                case 9 -> fillTestData();
+            }
+        }
+    }
+
+    private static int commandReader() {
+        int command = scanner.nextInt();
+        scanner.nextLine();
+        return command;
+    }
+
+    private static void fillTestData() {
+        Task task1 = taskManager.createTask("Погулять", "Наслаждаясь своим свободным временем и силами на это, взять себя в руки и направится на покорение ближайших и не очень дорог");
+        Task task2 = taskManager.createTask("Поспать", "Независимо от того продуктивный это был день или не очень, нужно поспать");
+        Epic epic1 = taskManager.createEpic("Учеба", "Заняться прохождением курса обучения Яндекс Практикума");
+        taskManager.createSubtask("Открыть сайт", "Тебе требуется открыть сайт в интернете, например с помощью компьютера или телефона", 2);
+        taskManager.createSubtask("Залогиниться", "Ввести свой логин и пароль на сайте чтобы пройти аутентификацию", 2);
+        taskManager.createSubtask("Собраться", "Соберись с мыслями, выкинь всек лишнее из головы и приготовься морально к занятиям", 2);
     }
 }

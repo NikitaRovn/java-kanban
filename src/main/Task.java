@@ -1,13 +1,36 @@
 package main;
 
 import java.util.Objects;
-import java.util.Set;
 
 public class Task {
-    String name;
-    String description;
-    int id;
-    taskStatus status;
+    private String name;
+    private String description;
+    private int id;
+    private taskStatus status;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public taskStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(taskStatus status) {
+        this.status = status;
+    }
 
     public Task(int id, String name, String description) {
         this.id = id;
@@ -26,5 +49,9 @@ public class Task {
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    public int getId() {
+        return id;
     }
 }

@@ -39,23 +39,23 @@ public class TaskManager {
     public Subtask createSubtask(String name, String description, int parentId) {
         Subtask targetTask = new Subtask(generateUniqueId(), name, description, parentId);
         Epic parentTask = (Epic) getTaskById(parentId);
-        parentTask.addSubtask(targetTask.id);
+        parentTask.addSubtask(targetTask.getId());
         return targetTask;
     }
 
     public Task updateNameAndDescription(int id, String name, String description) {
         Task targetTask = getTaskById(id);
-        targetTask.name = name;
-        targetTask.description = description;
+        targetTask.setName(name);
+        targetTask.setDescription(description);
         return targetTask;
     }
 
     public Task updateStatus(int id, taskStatus status) {
         Task targetTask = getTaskById(id);
         if (!(targetTask instanceof Epic)) {
-            targetTask.status = status;
+            targetTask.setStatus(status);
             if (targetTask instanceof Subtask) {
-                updateStatusEpic(((Subtask) targetTask).parentId);
+                updateStatusEpic(((Subtask) targetTask).getParentId());
             }
             return targetTask;
         } else {
@@ -65,12 +65,12 @@ public class TaskManager {
 
     private void updateStatusEpic(int epicId) {
         Epic epicTask = (Epic) getTaskById(epicId);
-        if (epicTask.subtasksId.stream().allMatch(taskId -> getTaskById(taskId).status == taskStatus.NEW)) {
-            epicTask.status = taskStatus.NEW;
-        } else if (epicTask.subtasksId.stream().allMatch(taskId -> getTaskById(taskId).status == taskStatus.DONE)) {
-            epicTask.status = taskStatus.DONE;
+        if (epicTask.getSubtasks().stream().allMatch(taskId -> getTaskById(taskId).getStatus() == taskStatus.NEW)) {
+            epicTask.setStatus(taskStatus.NEW);
+        } else if (epicTask.getSubtasks().stream().allMatch(taskId -> getTaskById(taskId).getStatus() == taskStatus.DONE)) {
+            epicTask.setStatus(taskStatus.DONE);
         } else {
-            epicTask.status = taskStatus.IN_PROGRESS;
+            epicTask.setStatus(taskStatus.IN_PROGRESS);
         }
     }
 
