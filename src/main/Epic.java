@@ -1,9 +1,10 @@
 package main;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class Epic extends Task {
-    private Set<Integer> subtasksId;
+    private Set<Integer> subtasksId = new HashSet<>();
 
     public Epic(int id, String name, String description) {
         super(id, name, description);

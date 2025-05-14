@@ -78,6 +78,7 @@ public class Main {
                         case 1 -> System.out.println(taskManager.updateStatus(targetId, taskStatus.NEW));
                         case 2 -> System.out.println(taskManager.updateStatus(targetId, taskStatus.IN_PROGRESS));
                         case 3 -> System.out.println(taskManager.updateStatus(targetId, taskStatus.DONE));
+                        default -> System.out.println("Неверная команда.");
                     }
                 }
                 case 8 -> {

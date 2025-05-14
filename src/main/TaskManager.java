@@ -5,7 +5,7 @@ import java.util.Set;
 
 public class TaskManager {
     private static int idTaskCounter = 0;
-    private HashMap<Integer, Task> tasks;
+    private HashMap<Integer, Task> tasks = new HashMap<>();
 
     private static int generateUniqueId() {
         return idTaskCounter++;
@@ -29,18 +29,23 @@ public class TaskManager {
     }
 
     public Task createTask(String name, String description) {
-        return new Task(generateUniqueId(), name, description);
+        Task newTask = new Task(generateUniqueId(), name, description);
+        tasks.put(newTask.getId(), newTask);
+        return newTask;
     }
 
     public Epic createEpic(String name, String description) {
-        return new Epic(generateUniqueId(), name, description);
+        Epic newEpic = new Epic(generateUniqueId(), name, description);
+        tasks.put(newEpic.getId(), newEpic);
+        return newEpic;
     }
 
     public Subtask createSubtask(String name, String description, int parentId) {
-        Subtask targetTask = new Subtask(generateUniqueId(), name, description, parentId);
+        Subtask newSubtask = new Subtask(generateUniqueId(), name, description, parentId);
         Epic parentTask = (Epic) getTaskById(parentId);
-        parentTask.addSubtask(targetTask.getId());
-        return targetTask;
+        parentTask.addSubtask(newSubtask.getId());
+        tasks.put(newSubtask.getId(), newSubtask);
+        return newSubtask;
     }
 
     public Task updateNameAndDescription(int id, String name, String description) {
@@ -80,7 +85,9 @@ public class TaskManager {
         } else if (this.tasks.isEmpty()) {
             return "Удаление не удалось! Нет задач для удаления.";
         } else {
-            return String.format("Удаление успешно! Удалено %d задач.", this.tasks.size());
+            String result = String.format("Удаление успешно! Удалено %d задач.", this.tasks.size());
+            tasks.clear();
+            return result;
         }
     }
 
