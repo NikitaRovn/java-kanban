@@ -1,12 +1,11 @@
 package main;
 
-import java.util.HashMap;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 public class Main {
-    private static TaskManager taskManager = new TaskManager();
-    private static Scanner scanner = new Scanner(System.in);
+    private static final TaskManager taskManager = Managers.getDefault();
+    private static final HistoryManager historyManager = Managers.getDefaultHistory();
+    private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
 
@@ -22,6 +21,7 @@ public class Main {
             System.out.println("7 - изменить статус задачи (только не для эпических).");
             System.out.println("8 - получение списка подзадач эпической задачи.");
             System.out.println("9 - заполнить программу тестовыми данными.");
+            System.out.println("10 - Вывести историю просмотров.");
 
             switch (commandReader()) {
                 case 1 -> {
@@ -30,9 +30,7 @@ public class Main {
                         System.out.println(task);
                     }
                 }
-                case 2 -> {
-                    System.out.println(taskManager.deleteAllTasks());
-                }
+                case 2 -> System.out.println(taskManager.deleteAllTasks());
                 case 3 -> {
                     System.out.println("Введите ID задачи:");
                     int taskId = commandReader();
@@ -90,6 +88,13 @@ public class Main {
                     }
                 }
                 case 9 -> fillTestData();
+                case 10 -> {
+                    List<Task> result = historyManager.getHistory();
+                    System.out.println(result);
+                }
+                default -> {
+                    return;
+                }
             }
         }
     }
@@ -106,6 +111,6 @@ public class Main {
         Epic epic1 = taskManager.createEpic("Учеба", "Заняться прохождением курса обучения Яндекс Практикума");
         taskManager.createSubtask("Открыть сайт", "Тебе требуется открыть сайт в интернете, например с помощью компьютера или телефона", epic1.getId());
         taskManager.createSubtask("Залогиниться", "Ввести свой логин и пароль на сайте чтобы пройти аутентификацию", epic1.getId());
-        taskManager.createSubtask("Собраться", "Соберись с мыслями, выкинь всек лишнее из головы и приготовься морально к занятиям", epic1.getId());
+        taskManager.createSubtask("Собраться", "Соберись с мыслями, выкинь все лишнее из головы и приготовься морально к занятиям", epic1.getId());
     }
 }
