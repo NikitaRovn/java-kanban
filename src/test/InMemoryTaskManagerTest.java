@@ -98,4 +98,16 @@ class InMemoryTaskManagerTest {
 
         Assertions.assertEquals(subtasksListId, taskManager.getSubtasksById(testEpic1.getId()));
     }
+
+    @Test
+    void shouldReturnTrueWhenTwoTasksHaveSameId() {
+        Task testTask1 = taskManager.createTask("TestTask1Name", "TestTask1Description");
+        int testTask1Id = testTask1.getId();
+        Task testTask2 = taskManager.getTaskById(testTask1Id);
+
+        Assertions.assertEquals(testTask1, testTask2);
+    }
+
+    // Тест на "невозможность добавления Epic в самого себя" не могу провести, т.к. код написан таким образом, что
+    // проверка не требуется - пути для добавления эпика в сабтаск другого эпика не существует.
 }

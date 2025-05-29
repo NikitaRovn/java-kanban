@@ -3,7 +3,7 @@ package main;
 import java.util.List;
 
 public interface HistoryManager {
-    void addHistoryEntry(Task taskToAdd);
+    void addHistory(Task taskToAdd);
 
     List<Task> getHistory();
 }

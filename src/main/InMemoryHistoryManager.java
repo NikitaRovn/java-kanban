@@ -14,7 +14,7 @@ public class InMemoryHistoryManager implements HistoryManager{
     }
 
     @Override
-    public void addHistoryEntry(Task taskToAdd) {
+    public void addHistory(Task taskToAdd) {
         if (historyTaskList.size() >= MAX_HISTORY_SIZE) {
             historyTaskList.removeFirst();
         }

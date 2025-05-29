@@ -20,13 +20,15 @@ public class InMemoryTaskManager implements TaskManager {
     public Task getTaskById(int id) {
         Task targetTask = this.tasks.get(id);
         if (targetTask != null) {
-            historyManager.addHistoryEntry(targetTask);
+            historyManager.addHistory(targetTask);
         }
         return targetTask;
     }
 
     @Override
     public Set<Integer> getSubtasksById(int id) {
+        // Не исправляю, т.к. метод вызываемый в строке 32 вызывает внутри себя запись в историю.
+        // Если выполнить вашу рекомендацию - в историю будет попадать две записи.
         Task targetTask = getTaskById(id);
         if (targetTask instanceof Epic) {
             return ((Epic) targetTask).getSubtasks();

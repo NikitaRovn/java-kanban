@@ -10,7 +10,7 @@ import java.util.List;
 
 class InMemoryHistoryManagerTest {
     @Test
-    void addHistoryEntry() {
+    void addHistory() {
         TaskManager taskManager = Managers.getDefault();
         Task testTask1 = taskManager.createTask("TestTask1Name", "TestTask1Description");
         Task testTask1Answer = taskManager.getTaskById(testTask1.getId());
@@ -23,9 +23,9 @@ class InMemoryHistoryManagerTest {
         TaskManager taskManager = Managers.getDefault();
         HistoryManager historyManager = Managers.getDefaultHistory();
         Task testTask1 = taskManager.createTask("TestTask1Name", "TestTask1Description");
-        historyManager.addHistoryEntry(testTask1);
+        historyManager.addHistory(testTask1);
         Task testTask2 = taskManager.createTask("TestTask2Name", "TestTask2Description");
-        historyManager.addHistoryEntry(testTask2);
+        historyManager.addHistory(testTask2);
 
         ArrayDeque<Task> tasks = new ArrayDeque<>(List.of(
                 testTask1,
