@@ -1,4 +1,6 @@
-package main;
+package main.java.history;
+
+import main.java.model.Task;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

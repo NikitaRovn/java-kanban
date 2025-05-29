@@ -1,7 +1,9 @@
-import main.HistoryManager;
-import main.Managers;
-import main.Task;
-import main.TaskManager;
+package history;
+
+import main.java.history.HistoryManager;
+import main.java.manager.Managers;
+import main.java.model.Task;
+import main.java.manager.TaskManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

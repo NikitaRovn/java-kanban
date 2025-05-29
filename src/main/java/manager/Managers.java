@@ -1,4 +1,7 @@
-package main;
+package main.java.manager;
+
+import main.java.history.HistoryManager;
+import main.java.history.InMemoryHistoryManager;
 
 public class Managers {
     public static TaskManager getDefault() {

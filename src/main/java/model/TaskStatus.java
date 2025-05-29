@@ -1,4 +1,4 @@
-package main;
+package main.java.model;
 
 public enum TaskStatus {
     NEW,

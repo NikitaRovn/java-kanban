@@ -1,5 +1,12 @@
 package main;
 
+import main.java.history.HistoryManager;
+import main.java.manager.Managers;
+import main.java.manager.TaskManager;
+import main.java.model.Epic;
+import main.java.model.Task;
+import main.java.model.TaskStatus;
+
 import java.util.*;
 
 public class Main {
