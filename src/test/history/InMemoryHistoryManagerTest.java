@@ -2,7 +2,7 @@ package history;
 
 import main.java.history.HistoryManager;
 import main.java.manager.Managers;
-import main.java.model.Task;
+import main.java.tasks.Task;
 import main.java.manager.TaskManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,7 @@ import java.util.List;
 
 class InMemoryHistoryManagerTest {
     @Test
-    void addHistory() {
+    void add() {
         TaskManager taskManager = Managers.getDefault();
         Task testTask1 = taskManager.createTask("TestTask1Name", "TestTask1Description");
         Task testTask1Answer = taskManager.getTaskById(testTask1.getId());
@@ -25,9 +25,9 @@ class InMemoryHistoryManagerTest {
         TaskManager taskManager = Managers.getDefault();
         HistoryManager historyManager = Managers.getDefaultHistory();
         Task testTask1 = taskManager.createTask("TestTask1Name", "TestTask1Description");
-        historyManager.addHistory(testTask1);
+        historyManager.add(testTask1);
         Task testTask2 = taskManager.createTask("TestTask2Name", "TestTask2Description");
-        historyManager.addHistory(testTask2);
+        historyManager.add(testTask2);
 
         ArrayDeque<Task> tasks = new ArrayDeque<>(List.of(
                 testTask1,
