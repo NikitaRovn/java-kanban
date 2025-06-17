@@ -117,6 +117,12 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public String deleteTaskById(int id) {
         if (this.tasks.containsKey(id)) {
+            if (this.tasks.get(id) instanceof Subtask subtask) {
+                int parentId = subtask.getParentId();
+                Epic parentTask = (Epic) getTaskById(parentId);
+                parentTask.removeSubTask(id);
+            }
+
             if (this.tasks.get(id) instanceof Epic epic) {
                 for (int subId : epic.getSubtasks()) {
                     tasks.remove(subId);
