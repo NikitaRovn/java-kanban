@@ -1,4 +1,4 @@
-package main.java.model;
+package main.java.tasks;
 
 import java.util.HashSet;
 import java.util.Set;
