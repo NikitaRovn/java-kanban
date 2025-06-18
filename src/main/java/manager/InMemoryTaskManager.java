@@ -1,10 +1,10 @@
 package main.java.manager;
 
 import main.java.history.HistoryManager;
-import main.java.tasks.Epic;
-import main.java.tasks.Subtask;
-import main.java.tasks.Task;
-import main.java.tasks.TaskStatus;
+import main.java.model.Epic;
+import main.java.model.Subtask;
+import main.java.model.Task;
+import main.java.model.TaskStatus;
 
 import java.util.*;
 
@@ -26,13 +26,15 @@ public class InMemoryTaskManager implements TaskManager {
     public Task getTaskById(int id) {
         Task targetTask = this.tasks.get(id);
         if (targetTask != null) {
-            historyManager.add(targetTask);
+            historyManager.addHistory(targetTask);
         }
         return targetTask;
     }
 
     @Override
     public Set<Integer> getSubtasksById(int id) {
+        // Не исправляю, т.к. метод вызываемый в строке 32 вызывает внутри себя запись в историю.
+        // Если выполнить вашу рекомендацию - в историю будет попадать две записи.
         Task targetTask = getTaskById(id);
         if (targetTask instanceof Epic) {
             return ((Epic) targetTask).getSubtasks();

@@ -1,13 +1,11 @@
 package main.java.history;
 
-import main.java.tasks.Task;
+import main.java.model.Task;
 
 import java.util.List;
 
 public interface HistoryManager {
-    void add(Task taskToAdd);
-
-    void remove(Task taskToDelete);
+    void addHistory(Task taskToAdd);
 
     List<Task> getHistory();
 }

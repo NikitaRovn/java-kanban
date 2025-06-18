@@ -2,9 +2,9 @@ package manager;
 
 import main.java.manager.Managers;
 import main.java.manager.TaskManager;
-import main.java.tasks.Epic;
-import main.java.tasks.Subtask;
-import main.java.tasks.Task;
+import main.java.model.Epic;
+import main.java.model.Subtask;
+import main.java.model.Task;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

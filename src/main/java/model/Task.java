@@ -1,4 +1,4 @@
-package main.java.tasks;
+package main.java.model;
 
 import java.util.Objects;
 

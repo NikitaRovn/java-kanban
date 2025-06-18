@@ -1,4 +1,4 @@
-package main.java.tasks;
+package main.java.model;
 
 public class Subtask extends Task{
     private int parentId;
