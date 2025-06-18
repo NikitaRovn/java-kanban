@@ -3,8 +3,6 @@ package main.java.history;
 import main.java.tasks.Task;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class InMemoryHistoryManager implements HistoryManager{
 
