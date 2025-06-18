@@ -4,7 +4,7 @@ import main.java.tasks.Task;
 
 import java.util.*;
 
-public class InMemoryHistoryManager implements HistoryManager{
+public class InMemoryHistoryManager implements HistoryManager {
 
     private final HashMap<Integer, Node> historyTaskList = new HashMap<>();
     private Node firstNode;
