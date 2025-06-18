@@ -1,6 +1,6 @@
 package main.java.tasks;
 
-public class Subtask extends Task{
+public class Subtask extends Task {
     private int parentId;
 
     public int getParentId() {
