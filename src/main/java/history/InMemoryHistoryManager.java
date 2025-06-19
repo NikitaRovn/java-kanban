@@ -12,62 +12,68 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public List<Task> getHistory() {
-
-        List<Task> historyList = new ArrayList<>();
-        Node current = firstNode;
-
-        while (current != null) {
-            historyList.add(current.currentTask);
-            current = current.nextNode;
-        }
-
-        return historyList;
+        return getTasks();
     }
 
     @Override
     public void add(Task taskToAdd) {
-        if (historyTaskList.containsKey(taskToAdd.getId())) {
-            this.remove(taskToAdd.getId());
-        }
+        if (taskToAdd == null) return;
 
-        Node newNode;
-
-        if (historyTaskList.isEmpty()) {
-            newNode = new Node(taskToAdd);
-            firstNode = newNode;
-            lastNode = newNode;
-        } else {
-            newNode = new Node(taskToAdd, lastNode);
-            lastNode.nextNode = newNode;
-        }
-
-        lastNode = newNode;
-
-        historyTaskList.put(taskToAdd.getId(), newNode);
+        remove(taskToAdd.getId());
+        linkLast(taskToAdd);
     }
 
     @Override
     public void remove(int id) {
-        if (firstNode.equals(lastNode) && firstNode.currentTask.getId() == id) {
-            historyTaskList.clear();
-            firstNode = null;
-            lastNode = null;
-        } else {
-            Node currentNode = historyTaskList.get(id);
-
-            if (currentNode.prevNode == null) {
-                currentNode.nextNode.prevNode = null;
-                firstNode = currentNode.nextNode;
-                historyTaskList.remove(currentNode.currentTask.getId());
-            } else if (currentNode.nextNode == null) {
-                currentNode.prevNode.nextNode = null;
-                lastNode = currentNode.prevNode;
-                historyTaskList.remove(currentNode.currentTask.getId());
-            } else {
-                currentNode.prevNode.nextNode = currentNode.nextNode;
-                currentNode.nextNode.prevNode = currentNode.prevNode;
-                historyTaskList.remove(currentNode.currentTask.getId());
-            }
+        Node node = historyTaskList.remove(id);
+        if (node != null) {
+            removeNode(node);
         }
+    }
+
+
+    private void linkLast(Task task) {
+        Node newNode = new Node(task, lastNode, null);
+
+        if (lastNode != null) {
+            lastNode.nextNode = newNode;
+        } else {
+            firstNode = newNode;
+        }
+
+        lastNode = newNode;
+        historyTaskList.put(task.getId(), newNode);
+    }
+
+    private List<Task> getTasks() {
+        List<Task> tasks = new ArrayList<>();
+        Node current = firstNode;
+
+        while (current != null) {
+            tasks.add(current.currentTask);
+            current = current.nextNode;
+        }
+
+        return tasks;
+    }
+
+    private void removeNode(Node node) {
+        Node prev = node.prevNode;
+        Node next = node.nextNode;
+
+        if (prev != null) {
+            prev.nextNode = next;
+        } else {
+            firstNode = next;
+        }
+
+        if (next != null) {
+            next.prevNode = prev;
+        } else {
+            lastNode = prev;
+        }
+
+        node.prevNode = null;
+        node.nextNode = null;
     }
 }
