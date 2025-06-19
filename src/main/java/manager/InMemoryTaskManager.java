@@ -131,6 +131,7 @@ public class InMemoryTaskManager implements TaskManager {
                 }
             }
             this.tasks.remove(id);
+            historyManager.remove(id);
             return String.format("Удаление успешно! Задача с ID: %d - удалена.", id);
         } else {
             return String.format("Удаление не удалось! Задача с ID: %d - не найдена.", id);
