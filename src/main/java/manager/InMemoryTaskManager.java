@@ -6,7 +6,9 @@ import main.java.tasks.Subtask;
 import main.java.tasks.Task;
 import main.java.tasks.TaskStatus;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Set;
 
 public class InMemoryTaskManager implements TaskManager {
     private int idTaskCounter = 0;
