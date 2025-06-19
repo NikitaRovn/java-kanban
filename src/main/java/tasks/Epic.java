@@ -1,4 +1,4 @@
-package main.java.model;
+package main.java.tasks;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,5 +16,9 @@ public class Epic extends Task {
 
     public void addSubtask(int id) {
         subtasksId.add(id);
+    }
+
+    public void removeSubTask(int id) {
+        subtasksId.remove(id);
     }
 }

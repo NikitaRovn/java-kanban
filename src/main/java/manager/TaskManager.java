@@ -1,9 +1,9 @@
 package main.java.manager;
 
-import main.java.model.Epic;
-import main.java.model.Subtask;
-import main.java.model.Task;
-import main.java.model.TaskStatus;
+import main.java.tasks.Epic;
+import main.java.tasks.Subtask;
+import main.java.tasks.Task;
+import main.java.tasks.TaskStatus;
 
 import java.util.HashMap;
 import java.util.Set;
