@@ -1,12 +1,14 @@
 package main.java.manager;
 
 import main.java.history.HistoryManager;
-import main.java.model.Epic;
-import main.java.model.Subtask;
-import main.java.model.Task;
-import main.java.model.TaskStatus;
+import main.java.tasks.Epic;
+import main.java.tasks.Subtask;
+import main.java.tasks.Task;
+import main.java.tasks.TaskStatus;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Set;
 
 public class InMemoryTaskManager implements TaskManager {
     private int idTaskCounter = 0;
@@ -26,15 +28,13 @@ public class InMemoryTaskManager implements TaskManager {
     public Task getTaskById(int id) {
         Task targetTask = this.tasks.get(id);
         if (targetTask != null) {
-            historyManager.addHistory(targetTask);
+            historyManager.add(targetTask);
         }
         return targetTask;
     }
 
     @Override
     public Set<Integer> getSubtasksById(int id) {
-        // Не исправляю, т.к. метод вызываемый в строке 32 вызывает внутри себя запись в историю.
-        // Если выполнить вашу рекомендацию - в историю будет попадать две записи.
         Task targetTask = getTaskById(id);
         if (targetTask instanceof Epic) {
             return ((Epic) targetTask).getSubtasks();
@@ -119,12 +119,19 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public String deleteTaskById(int id) {
         if (this.tasks.containsKey(id)) {
+            if (this.tasks.get(id) instanceof Subtask subtask) {
+                int parentId = subtask.getParentId();
+                Epic parentTask = (Epic) getTaskById(parentId);
+                parentTask.removeSubTask(id);
+            }
+
             if (this.tasks.get(id) instanceof Epic epic) {
                 for (int subId : epic.getSubtasks()) {
                     tasks.remove(subId);
                 }
             }
             this.tasks.remove(id);
+            historyManager.remove(id);
             return String.format("Удаление успешно! Задача с ID: %d - удалена.", id);
         } else {
             return String.format("Удаление не удалось! Задача с ID: %d - не найдена.", id);
