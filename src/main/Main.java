@@ -11,14 +11,17 @@ import java.util.*;
 
 public class Main {
     private static final TaskManager taskManager = Managers.getDefault();
-    private static final HistoryManager historyManager = Managers.getDefaultHistory();
+    // private static final HistoryManager historyManager = Managers.getDefaultHistory();
+
     private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
 
 
         while (true) {
+            System.out.println("-------------------------------------------------------");
             System.out.println("Список доступных команд:");
+            System.out.println("0 - выход из программы.");
             System.out.println("1 - получить список всех задач.");
             System.out.println("2 - удалить все задачи.");
             System.out.println("3 - получить задачу по её ID.");
@@ -27,10 +30,13 @@ public class Main {
             System.out.println("6 - удалить задачу по её ID.");
             System.out.println("7 - изменить статус задачи (только не для эпических).");
             System.out.println("8 - получение списка подзадач эпической задачи.");
-            System.out.println("9 - заполнить программу тестовыми данными.");
+            System.out.println("9 - ...");
             System.out.println("10 - Вывести историю просмотров.");
 
             switch (commandReader()) {
+                case 0 -> {
+                    return;
+                }
                 case 1 -> {
                     HashMap<Integer, Task> tasks = taskManager.getAllTasks();
                     for (Task task : tasks.values()) {
@@ -94,30 +100,25 @@ public class Main {
                         System.out.println(taskManager.getTaskById(i));
                     }
                 }
-                case 9 -> fillTestData();
                 case 10 -> {
-                    List<Task> result = historyManager.getHistory();
+                    List<Task> result = taskManager.getHistory();
                     System.out.println(result);
                 }
                 default -> {
-                    return;
+                    System.out.println("Неверная команда, введите число!");
                 }
             }
         }
     }
 
     private static int commandReader() {
+        while (!scanner.hasNextInt()) {
+            System.out.println("Вы ввели не число!");
+            scanner.next();
+        }
+
         int command = scanner.nextInt();
         scanner.nextLine();
         return command;
-    }
-
-    private static void fillTestData() {
-        Task task1 = taskManager.createTask("Погулять", "Наслаждаясь своим свободным временем и силами на это, взять себя в руки и направится на покорение ближайших и не очень дорог");
-        Task task2 = taskManager.createTask("Поспать", "Независимо от того продуктивный это был день или не очень, нужно поспать");
-        Epic epic1 = taskManager.createEpic("Учеба", "Заняться прохождением курса обучения Яндекс Практикума");
-        taskManager.createSubtask("Открыть сайт", "Тебе требуется открыть сайт в интернете, например с помощью компьютера или телефона", epic1.getId());
-        taskManager.createSubtask("Залогиниться", "Ввести свой логин и пароль на сайте чтобы пройти аутентификацию", epic1.getId());
-        taskManager.createSubtask("Собраться", "Соберись с мыслями, выкинь все лишнее из головы и приготовься морально к занятиям", epic1.getId());
     }
 }

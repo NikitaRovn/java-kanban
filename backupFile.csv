@@ -1,0 +1,17 @@
+type;id;name;description;status;childsOrParent
+EPIC;5;TestEpicName5;TestEpicDescription5;NEW;6,7
+EPIC;11;001;001;NEW;12,13,14
+SUBTASK;6;TestSubtaskName6;TestSubtaskDescription6;NEW;5
+SUBTASK;7;TestSubtaskName7;TestSubtaskDescription7;NEW;5
+SUBTASK;12;1234;213;NEW;11
+SUBTASK;13;432;2413;NEW;11
+SUBTASK;14;654;3456;NEW;11
+TASK;1;TestTaskName1;TestTaskDescription1;NEW;
+TASK;2;TestTaskName2;TestTaskDescription2;NEW;
+TASK;3;TestTaskName3;TestTaskDescription3;IN_PROGRESS;
+TASK;4;TestTaskName4;TestTaskDescription4;DONE;
+TASK;8;123;123;NEW;
+TASK;9;2;3;NEW;
+TASK;10;1234;123444;NEW;
+
+11

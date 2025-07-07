@@ -54,4 +54,22 @@ public class Task {
     public int getId() {
         return id;
     }
+
+    public static Task fromString(String csvLine) {
+        String[] fields = csvLine.split(";");
+
+        Task newTask = new Task(Integer.parseInt(fields[1]),
+                fields[2],
+                fields[3]);
+
+        newTask.setStatus(TaskStatus.valueOf(fields[4]));
+
+        return newTask;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("TASK;%d;%s;%s;%s;", id, name, description, status);
+    }
+
 }
