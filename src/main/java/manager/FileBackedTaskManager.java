@@ -78,10 +78,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             for (String taskLine : lines) {
                 String type = taskLine.split(";")[0];
                 switch (TaskTypes.valueOf(type)) {
-                    case TASK -> {
-                        Task task = Task.fromString(taskLine);
-                        getAllTasks().put(task.getId(), task);
-                    }
                     case EPIC -> {
                         Epic epic = Epic.fromString(taskLine);
                         getAllTasks().put(epic.getId(), epic);
@@ -93,6 +89,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         if (parent != null) {
                             parent.addSubtask(subtask.getId());
                         }
+                    }
+                    case TASK -> {
+                        Task task = Task.fromString(taskLine);
+                        getAllTasks().put(task.getId(), task);
                     }
                 }
             }

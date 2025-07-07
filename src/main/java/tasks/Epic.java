@@ -40,8 +40,17 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        String subtasksJoined = String.join(",", subtasksId.stream().map(String::valueOf).toList());
-        return String.format("EPIC;%d;%s;%s;%s;%s", getId(), getName(), getDescription(), getStatus(), subtasksJoined);
+        String subtasks;
+
+        if (subtasksId == null || subtasksId.isEmpty()) {
+            subtasks = "0";
+        } else {
+            subtasks = subtasksId.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(","));
+        }
+
+        return String.format("EPIC;%d;%s;%s;%s;%s", getId(), getName(), getDescription(), getStatus(), subtasks);
     }
 
 }

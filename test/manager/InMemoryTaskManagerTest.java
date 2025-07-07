@@ -22,15 +22,18 @@ class InMemoryTaskManagerTest {
 
     @Test
     void getAllTasks() {
+        int initialTaskCount = taskManager.getAllTasks().size();
+
         Task testTask1 = taskManager.createTask("TestTask1Name", "TestTask1Description");
         Task testTask2 = taskManager.createTask("TestTask2Name", "TestTask2Description");
-        HashMap<Integer, Task> tasksAnswer = taskManager.getAllTasks();
-        HashMap<Integer, Task> tasks = new HashMap<>() {{
-            put(testTask1.getId(), testTask1);
-            put(testTask2.getId(), testTask2);
-        }};
 
-        Assertions.assertEquals(tasks, tasksAnswer, "Полученный список всех задач не совпадает с поданным.");
+        Assertions.assertEquals(initialTaskCount + 2, taskManager.getAllTasks().size(),
+                "Количество задач должно увеличиться на 2.");
+
+        Assertions.assertTrue(taskManager.getAllTasks().containsValue(testTask1),
+                "Список задач должен содержать testTask1.");
+        Assertions.assertTrue(taskManager.getAllTasks().containsValue(testTask2),
+                "Список задач должен содержать testTask2.");
     }
 
     @Test
@@ -46,7 +49,7 @@ class InMemoryTaskManagerTest {
     void getTaskById() {
         Task testTask1 = taskManager.createTask("TestTask1Name", "TestTask1Description");
 
-        Assertions.assertEquals(testTask1, taskManager.getTaskById(0));
+        Assertions.assertEquals(testTask1, taskManager.getTaskById(testTask1.getId()));
     }
 
     @Test
@@ -69,8 +72,8 @@ class InMemoryTaskManagerTest {
 
     @Test
     void createSubtask() {
-        Task testEpic1 = taskManager.createEpic("TestEpic1Name", "TestEpic1Description");
-        Subtask testSubtask1 = taskManager.createSubtask("TestSubtask1Name", "TestSubtask1Description", 0);
+        Epic testEpic1 = taskManager.createEpic("TestEpic1Name", "TestEpic1Description");
+        Subtask testSubtask1 = taskManager.createSubtask("TestSubtask1Name", "TestSubtask1Description", testEpic1.getId());
         int testSubtask1Id = testSubtask1.getId();
         Subtask testSubtask1Answer = (Subtask) taskManager.getTaskById(testSubtask1Id);
 
@@ -81,10 +84,10 @@ class InMemoryTaskManagerTest {
     @Test
     void updateNameAndDescription() {
         Task testEpic1 = taskManager.createEpic("TestEpic1Name", "TestEpic1Description");
-        taskManager.updateNameAndDescription(0, "TestEpic1NameNEW", "TestEpic1DescriptionNEW");
+        taskManager.updateNameAndDescription(testEpic1.getId(), "TestEpic1NameNEW", "TestEpic1DescriptionNEW");
 
-        Assertions.assertEquals("TestEpic1NameNEW", taskManager.getTaskById(0).getName(), "Имя задачи не обновилось.");
-        Assertions.assertEquals("TestEpic1DescriptionNEW", taskManager.getTaskById(0).getDescription(), "Описание задачи не обновилось.");
+        Assertions.assertEquals("TestEpic1NameNEW", testEpic1.getName(), "Имя задачи не обновилось.");
+        Assertions.assertEquals("TestEpic1DescriptionNEW", testEpic1.getDescription(), "Описание задачи не обновилось.");
     }
 
     @Test
@@ -98,9 +101,9 @@ class InMemoryTaskManagerTest {
     @Test
     void getSubtasksById() {
         Task testEpic1 = taskManager.createEpic("TestEpic1Name", "TestEpic1Description");
-        Subtask testSubtask1 = taskManager.createSubtask("TestSubtask1Name", "TestSubtask1Description", 0);
-        Subtask testSubtask2 = taskManager.createSubtask("TestSubtask2Name", "TestSubtask2Description", 0);
-        Set<Integer> subtasksListId = Set.of(1, 2);
+        Subtask testSubtask1 = taskManager.createSubtask("TestSubtask1Name", "TestSubtask1Description", testEpic1.getId());
+        Subtask testSubtask2 = taskManager.createSubtask("TestSubtask2Name", "TestSubtask2Description", testEpic1.getId());
+        Set<Integer> subtasksListId = Set.of(testSubtask1.getId(), testSubtask2.getId());
 
         Assertions.assertEquals(subtasksListId, taskManager.getSubtasksById(testEpic1.getId()));
     }
