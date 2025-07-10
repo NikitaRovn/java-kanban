@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final Path backupFile;
 
-    FileBackedTaskManager(Path backupFile) {
+    public FileBackedTaskManager(Path backupFile) {
         this.backupFile = backupFile;
     }
 
