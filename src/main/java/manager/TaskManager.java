@@ -6,6 +6,7 @@ import main.java.tasks.Task;
 import main.java.tasks.TaskStatus;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 public interface TaskManager {
@@ -28,4 +29,6 @@ public interface TaskManager {
     String deleteAllTasks();
 
     String deleteTaskById(int id);
+
+    List<Task> getHistory();
 }

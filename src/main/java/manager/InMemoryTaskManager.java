@@ -8,15 +8,29 @@ import main.java.tasks.TaskStatus;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 public class InMemoryTaskManager implements TaskManager {
-    private int idTaskCounter = 0;
+    protected  int idTaskCounter = 0;
     private HashMap<Integer, Task> tasks = new HashMap<>();
-    private HistoryManager historyManager = Managers.getDefaultHistory();
+    protected HistoryManager historyManager = Managers.getDefaultHistory();
 
     private int generateUniqueId() {
-        return this.idTaskCounter++;
+        int maxCurrentId = 0;
+
+        for (int id : tasks.keySet()) {
+            if (id > maxCurrentId) {
+                maxCurrentId = id;
+            }
+        }
+
+        if (maxCurrentId >= idTaskCounter) {
+            idTaskCounter = maxCurrentId + 1;
+        } else {
+            idTaskCounter++;
+        }
+        return idTaskCounter;
     }
 
     @Override
@@ -137,4 +151,10 @@ public class InMemoryTaskManager implements TaskManager {
             return String.format("Удаление не удалось! Задача с ID: %d - не найдена.", id);
         }
     }
+
+    @Override
+    public List<Task> getHistory() {
+        return historyManager.getHistory();
+    }
+
 }
