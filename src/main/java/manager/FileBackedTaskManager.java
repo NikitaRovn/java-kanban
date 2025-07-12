@@ -61,7 +61,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             List<Task> historyTasks = getHistory();
             List<Integer> historyIds = historyTasks.stream()
                     .map(Task::getId)
-                    .collect(Collectors.toList());
+                    .toList();
             writer.write(HistoryUtil.toString(historyIds));
             writer.newLine();
 

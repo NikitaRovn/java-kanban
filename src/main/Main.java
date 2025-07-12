@@ -16,7 +16,6 @@ public class Main {
 
     public static void main(String[] args) {
 
-
         while (true) {
             System.out.println("-------------------------------------------------------");
             System.out.println("Список доступных команд:");
@@ -117,9 +116,7 @@ public class Main {
                     List<Task> result = taskManager.getHistory();
                     System.out.println(result);
                 }
-                default -> {
-                    System.out.println("Неверная команда, введите число!");
-                }
+                default -> System.out.println("Неверная команда, введите число!");
             }
         }
     }

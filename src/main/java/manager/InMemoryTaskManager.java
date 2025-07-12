@@ -50,8 +50,8 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Set<Integer> getSubtasksById(int id) {
         Task targetTask = getTaskById(id);
-        if (targetTask instanceof Epic) {
-            return ((Epic) targetTask).getSubtasks();
+        if (targetTask instanceof Epic epic) {
+            return epic.getSubtasks();
         } else {
             return Collections.emptySet();
         }
@@ -75,10 +75,9 @@ public class InMemoryTaskManager implements TaskManager {
     public Subtask createSubtask(String name, String description, int parentId) {
         Subtask newSubtask = new Subtask(generateUniqueId(), name, description, parentId);
         Task targetTask = this.tasks.get(parentId);
-        if (!(targetTask instanceof Epic)) {
+        if (!(targetTask instanceof Epic parentTask)) {
             return null;
         }
-        Epic parentTask = (Epic) targetTask;
         parentTask.addSubtask(newSubtask.getId());
         tasks.put(newSubtask.getId(), newSubtask);
         return newSubtask;
@@ -98,8 +97,8 @@ public class InMemoryTaskManager implements TaskManager {
         Task targetTask = getTaskById(id);
         if (!(targetTask instanceof Epic)) {
             targetTask.setStatus(status);
-            if (targetTask instanceof Subtask) {
-                updateStatusEpic(((Subtask) targetTask).getParentId());
+            if (targetTask instanceof Subtask subtask) {
+                updateStatusEpic(subtask.getParentId());
             }
             return targetTask;
         } else {
