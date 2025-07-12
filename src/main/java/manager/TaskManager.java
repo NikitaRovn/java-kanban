@@ -31,4 +31,8 @@ public interface TaskManager {
     String deleteTaskById(int id);
 
     List<Task> getHistory();
+
+    void setStartTime(int taskId, String startTimeRaw);
+
+    void setDuration(int taskId, int minutes);
 }

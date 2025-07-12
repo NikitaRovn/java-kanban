@@ -1,5 +1,7 @@
 package main.java.tasks;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,21 @@ public class Epic extends Task {
                 fields[3]);
 
         newEpic.subtasksId = subtasks;
+        if (fields.length > 6 && !fields[6].isEmpty()) {
+            newEpic.setStartTime(LocalDateTime.parse(fields[6]));
+        } else {
+            newEpic.setStartTime(LocalDateTime.MIN);
+        }
+
+        if (fields.length > 7 && !fields[7].isEmpty()) {
+            newEpic.setDuration(Duration.parse(fields[7]));
+        } else {
+            newEpic.setDuration(Duration.ZERO);
+        }
+
+        if (fields.length > 8 && !fields[8].isEmpty()) {
+            newEpic.setEndTime();
+        }
 
         return newEpic;
     }
@@ -50,7 +67,15 @@ public class Epic extends Task {
                     .collect(Collectors.joining(","));
         }
 
-        return String.format("EPIC;%d;%s;%s;%s;%s", getId(), getName(), getDescription(), getStatus(), subtasks);
+        return String.format("EPIC;%d;%s;%s;%s;%s;%s;%s;%s",
+                getId(),
+                getName(),
+                getDescription(),
+                getStatus(),
+                subtasks,
+                getStartTime().toString(),
+                getDuration().toString(),
+                getEndTime().toString());
     }
 
 }

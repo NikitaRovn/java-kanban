@@ -1,5 +1,8 @@
 package main.java.tasks;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 public class Subtask extends Task {
     private int parentId;
 
@@ -21,13 +24,24 @@ public class Subtask extends Task {
                 Integer.parseInt(fields[5]));
 
         newSubtask.setStatus(TaskStatus.valueOf(fields[4]));
+        newSubtask.setStartTime(LocalDateTime.parse(fields[6]));
+        newSubtask.setDuration(Duration.parse(fields[7]));
+        newSubtask.setEndTime();
 
         return newSubtask;
     }
 
     @Override
     public String toString() {
-        return String.format("SUBTASK;%d;%s;%s;%s;%d", getId(), getName(), getDescription(), getStatus(), parentId);
+        return String.format("SUBTASK;%d;%s;%s;%s;%d;%s;%s;%s",
+                getId(),
+                getName(),
+                getDescription(),
+                getStatus(),
+                parentId,
+                getStartTime().toString(),
+                getDuration().toString(),
+                getEndTime().toString());
     }
 
 }
