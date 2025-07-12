@@ -1,5 +1,6 @@
 package main;
 
+import main.java.manager.FileBackedTaskManager;
 import main.java.manager.Managers;
 import main.java.manager.TaskManager;
 import main.java.tasks.Task;
@@ -28,11 +29,14 @@ public class Main {
             System.out.println("6 - удалить задачу по её ID.");
             System.out.println("7 - изменить статус задачи (только не для эпических).");
             System.out.println("8 - получение списка подзадач эпической задачи.");
-            System.out.println("9 - ...");
+            System.out.println("9 - вывести задачи в порядке приоритета по времени.");
             System.out.println("10 - Вывести историю просмотров.");
 
             switch (commandReader()) {
                 case 0 -> {
+                    if (taskManager instanceof FileBackedTaskManager fbManager) {
+                        fbManager.save();
+                    }
                     return;
                 }
                 case 1 -> {
@@ -97,6 +101,17 @@ public class Main {
                     for (int i : subtasksId) {
                         System.out.println(taskManager.getTaskById(i));
                     }
+                }
+                case 9 -> {
+                    if (taskManager instanceof FileBackedTaskManager fileBackedTaskManager) {
+                        List<Task> prioritizedTasks = fileBackedTaskManager.getPrioritizedTasks();
+                        for (Task task : prioritizedTasks) {
+                            System.out.println(task);
+                        }
+                    } else {
+                        System.out.println("Приоритетный список задач недоступен.");
+                    }
+
                 }
                 case 10 -> {
                     List<Task> result = taskManager.getHistory();
