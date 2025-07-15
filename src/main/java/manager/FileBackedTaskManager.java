@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -249,5 +250,45 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                 .filter(existingTask -> existingTask.getId() != taskToCheck.getId())
                 .filter(existingTask -> !(existingTask instanceof Epic))
                 .anyMatch(taskToCheck::overlaps);
+    }
+
+    @Override
+    public void setStartTime(int taskId, String startTimeRaw) {
+        Task targetTask = getTaskById(taskId);
+        if (targetTask == null) return;
+
+        targetTask.setStartTime(LocalDateTime.parse(startTimeRaw));
+
+        if (!(targetTask instanceof Epic)) {
+            if (isOverlappingWithExistingTasks(targetTask)) {
+                deleteTaskById(taskId);
+            } else {
+                updatePrioritizedTasks(targetTask);
+            }
+        }
+
+        save();
+    }
+
+    @Override
+    public void setDuration(int taskId, int minutes) {
+        Task targetTask = getTaskById(taskId);
+        if (targetTask == null) return;
+
+        targetTask.setDuration(Duration.ofMinutes(minutes));
+
+        if (targetTask instanceof Subtask subtask) {
+            updateTimeStatEpic(subtask.getParentId());
+        }
+
+        if (!(targetTask instanceof Epic)) {
+            if (isOverlappingWithExistingTasks(targetTask)) {
+                deleteTaskById(taskId);
+            } else {
+                updatePrioritizedTasks(targetTask);
+            }
+        }
+
+        save();
     }
 }

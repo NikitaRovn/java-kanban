@@ -173,7 +173,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    private void updateTimeStatEpic(int epicId) {
+    protected void updateTimeStatEpic(int epicId) {
         Epic targetEpic = (Epic) getTaskById(epicId);
         Set<Subtask> subtasks = getSubtasksById(epicId).stream().map(elem -> (Subtask) this.getTaskById(elem)).collect(Collectors.toSet());
 

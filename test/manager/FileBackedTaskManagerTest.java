@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -104,5 +106,58 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
 
         assertNotNull(testTask3, "Задача со временем не была создана.");
         assertEquals(3, fileBackedTaskManager.getAllTasks().size(), "Всего должно быть 3 задачи.");
+    }
+
+    @Test
+    void tasksOverlapShouldReturnTrue() {
+        Task testTask1 = new Task(1, "TestTask1Name", "TestTask1Description");
+        testTask1.setStartTime(LocalDateTime.of(2025, 7, 15, 10, 0));
+        testTask1.setDuration(Duration.ofMinutes(60));
+
+        Task testTask2 = new Task(2, "TestTask2Name", "TestTask2Description");
+        testTask2.setStartTime(LocalDateTime.of(2025, 7, 15, 10, 30));
+        testTask2.setDuration(Duration.ofMinutes(30));
+
+        assertTrue(testTask1.overlaps(testTask2), "Overlaps должен вернуть true, т.к. задачи пересекаются.");
+    }
+
+    @Test
+    void tasksDoNotOverlapShouldReturnFalse() {
+        Task testTask1 = new Task(1, "TestTask1Name", "TestTask1Description");
+        testTask1.setStartTime(LocalDateTime.of(2025, 7, 15, 9, 0));
+        testTask1.setDuration(Duration.ofMinutes(60));
+
+        Task testTask2 = new Task(2, "TestTask2Name", "TestTask2Description");
+        testTask2.setStartTime(LocalDateTime.of(2025, 7, 15, 10, 0));
+        testTask2.setDuration(Duration.ofMinutes(60));
+
+        assertFalse(testTask1.overlaps(testTask2), "Overlaps должен вернуть false, т.к. задачи идут встык.");
+    }
+
+    @Test
+    void tasksWithNullOrMinTimeShouldNotOverlap() {
+        Task testTask1 = new Task(1, "TestTask1Name", "TestTask1Description");
+        Task testTask2 = new Task(2, "TestTask2Name", "TestTask2Description");
+
+        assertFalse(testTask1.overlaps(testTask2), "Overlaps должен вернуть false, т.к. у задач не определено время.");
+    }
+
+    @Test
+    void shouldNotAllowOverlappingTasks() throws IOException {
+        tempFile = Files.createTempFile("test", ".csv");
+        FileBackedTaskManager manager = new FileBackedTaskManager(tempFile);
+
+        Task testTask1 = manager.createTask("TestTask1Name", "TestTask1Description");
+        manager.setStartTime(testTask1.getId(), "2025-07-15T10:00:00");
+        manager.setDuration(testTask1.getId(), 60);
+
+        Task testTask2 = manager.createTask("TestTask2Name", "TestTask2Description");
+        manager.setStartTime(testTask2.getId(), "2025-07-15T10:30:00");
+        manager.setDuration(testTask2.getId(), 60);
+
+        assertEquals(1, manager.getAllTasks().size(), "При пересечении двух в итоге должно остаться только одна.");
+        assertNull(manager.getTaskById(testTask2.getId()), "Задача которая пересеклась должна быть удалена.");
+
+        Files.deleteIfExists(tempFile);
     }
 }
