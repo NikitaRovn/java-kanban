@@ -6,13 +6,13 @@ import main.java.tasks.Subtask;
 import main.java.tasks.Task;
 import main.java.tasks.TaskStatus;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class InMemoryTaskManager implements TaskManager {
-    protected  int idTaskCounter = 0;
+    protected int idTaskCounter = 0;
     private HashMap<Integer, Task> tasks = new HashMap<>();
     protected HistoryManager historyManager = Managers.getDefaultHistory();
 
@@ -35,7 +35,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public HashMap<Integer, Task> getAllTasks() {
-        return this.tasks;
+        return new HashMap<>(this.tasks);
     }
 
     @Override
@@ -50,8 +50,8 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Set<Integer> getSubtasksById(int id) {
         Task targetTask = getTaskById(id);
-        if (targetTask instanceof Epic) {
-            return ((Epic) targetTask).getSubtasks();
+        if (targetTask instanceof Epic epic) {
+            return epic.getSubtasks();
         } else {
             return Collections.emptySet();
         }
@@ -74,11 +74,10 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public Subtask createSubtask(String name, String description, int parentId) {
         Subtask newSubtask = new Subtask(generateUniqueId(), name, description, parentId);
-        Task targetTask = getTaskById(parentId);
-        if (!(targetTask instanceof Epic)) {
+        Task targetTask = this.tasks.get(parentId);
+        if (!(targetTask instanceof Epic parentTask)) {
             return null;
         }
-        Epic parentTask = (Epic) getTaskById(parentId);
         parentTask.addSubtask(newSubtask.getId());
         tasks.put(newSubtask.getId(), newSubtask);
         return newSubtask;
@@ -86,7 +85,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Task updateNameAndDescription(int id, String name, String description) {
-        Task targetTask = getTaskById(id);
+        Task targetTask = this.tasks.get(id);
+        if (targetTask == null) return null;
         targetTask.setName(name);
         targetTask.setDescription(description);
         return targetTask;
@@ -97,8 +97,8 @@ public class InMemoryTaskManager implements TaskManager {
         Task targetTask = getTaskById(id);
         if (!(targetTask instanceof Epic)) {
             targetTask.setStatus(status);
-            if (targetTask instanceof Subtask) {
-                updateStatusEpic(((Subtask) targetTask).getParentId());
+            if (targetTask instanceof Subtask subtask) {
+                updateStatusEpic(subtask.getParentId());
             }
             return targetTask;
         } else {
@@ -157,4 +157,30 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
+    public void setStartTime(int taskId, String startTimeRaw) {
+        LocalDateTime startTime = LocalDateTime.parse(startTimeRaw);
+        Task targetTask = getTaskById(taskId);
+
+        targetTask.setStartTime(startTime);
+    }
+
+    public void setDuration(int taskId, int minutes) {
+        Task targetTask = getTaskById(taskId);
+        targetTask.setDuration(Duration.ofMinutes(minutes));
+
+        if (targetTask instanceof Subtask subtask) {
+            updateTimeStatEpic(subtask.getParentId());
+        }
+    }
+
+    protected void updateTimeStatEpic(int epicId) {
+        Epic targetEpic = (Epic) getTaskById(epicId);
+        Set<Subtask> subtasks = getSubtasksById(epicId).stream().map(elem -> (Subtask) this.getTaskById(elem)).collect(Collectors.toSet());
+
+        Subtask earliestSubtask = subtasks.stream().min(Comparator.comparing(Subtask::getStartTime)).get();
+        LocalDateTime startTimeEpic = earliestSubtask.getStartTime();
+        targetEpic.setStartTime(startTimeEpic);
+        Duration durationAllSubtasks = subtasks.stream().map(Task::getDuration).reduce(Duration.ZERO, Duration::plus);
+        targetEpic.setDuration(durationAllSubtasks);
+    }
 }
