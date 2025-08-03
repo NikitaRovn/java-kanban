@@ -70,24 +70,16 @@ public class HttpTaskServer {
 
                         if (data.containsKey("id") && data.get("id") != null) {
                             task = taskManager.updateNameAndDescription(Integer.parseInt(data.get("id")), data.get("name"), data.get("description"));
+                            sendText(exchange, gson.toJson(task), 201);
                         } else {
                             task = taskManager.createTask(data.get("name"), data.get("description"));
+                            if (task == null) {
+                                sendHasInteractions(exchange, "Задача пересекается с существующими.");
+                            } else {
+                                sendText(exchange, gson.toJson(task), 201);
+                            }
                         }
-
-                        sendText(exchange, gson.toJson(task), 201);
-
                         break;
-//                    case "DELETE":
-//                        inputStream = exchange.getRequestBody();
-//                        body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-//
-//                        data = gson.fromJson(body, Map.class);
-//
-//                        String result = taskManager.deleteTaskById(Integer.parseInt(data.get("id")));
-//
-//                        sendText(exchange, result, 200);
-//
-//                        break;
                     default:
                         sendText(exchange, "Запрос не распознан.", 500);
                         break;
@@ -103,13 +95,22 @@ public class HttpTaskServer {
                         if (task == null) {
                             sendNotFound(exchange, "Задачи с id: " + id + "нет.");
                         } else {
-                            sendText(exchange, gson.toJson(task), 404);
+                            sendText(exchange, gson.toJson(task), 200);
                         }
 
                         break;
                     case "POST":
                         break;
                     case "DELETE":
+                        inputStream = exchange.getRequestBody();
+                        body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+
+                        data = gson.fromJson(body, Map.class);
+
+                        String result = taskManager.deleteTaskById(Integer.parseInt(data.get("id")));
+
+                        sendText(exchange, result, 200);
+
                         break;
                     default:
                         break;
