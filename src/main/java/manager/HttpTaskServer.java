@@ -1,6 +1,7 @@
 package main.java.manager;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -106,7 +107,7 @@ public class HttpTaskServer {
                         }
                         break;
                     default:
-                        sendText(exchange, "Запрос не распознан.", 500);
+                        sendText(exchange, "Запрос не распознан.", 404);
                         break;
                 }
 
@@ -193,7 +194,7 @@ public class HttpTaskServer {
                         }
                         break;
                     default:
-                        sendText(exchange, "Запрос не распознан.", 500);
+                        sendText(exchange, "Запрос не распознан.", 404);
                         break;
                 }
 
@@ -279,7 +280,7 @@ public class HttpTaskServer {
 
                         break;
                     default:
-                        sendText(exchange, "Запрос не распознан.", 500);
+                        sendText(exchange, "Запрос не распознан.", 404);
                         break;
                 }
 
