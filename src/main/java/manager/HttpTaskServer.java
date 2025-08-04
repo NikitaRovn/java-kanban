@@ -7,6 +7,7 @@ import com.sun.net.httpserver.HttpServer;
 import main.java.tasks.Epic;
 import main.java.tasks.Subtask;
 import main.java.tasks.Task;
+import main.java.tasks.TaskDto;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +21,7 @@ import java.util.Set;
 public class HttpTaskServer {
     private final HttpServer server;
     private final int port;
-    public static Gson gson = new Gson();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static void main(String[] args) throws IOException {
         TaskManager taskManager = Managers.getDefault();
@@ -41,7 +42,7 @@ public class HttpTaskServer {
 
     public void start() {
         server.start();
-        System.out.println("HTTP-сервер запущен на порту: " + port);
+        System.out.printf("HTTP-сервер запущен на порту: %d%n", port);
     }
 
     public void stop() {
@@ -51,7 +52,6 @@ public class HttpTaskServer {
 
     static class TasksHandler extends BaseHttpHandler implements HttpHandler {
         private final TaskManager taskManager;
-        // Gson gson = new Gson();
 
         public TasksHandler(TaskManager taskManager) {
             this.taskManager = taskManager;
@@ -61,7 +61,6 @@ public class HttpTaskServer {
         public void handle(HttpExchange exchange) throws IOException {
             InputStream inputStream;
             String body;
-            Map<String, String> data;
             Task task;
             int id;
             String path = exchange.getRequestURI().getPath();
@@ -81,13 +80,13 @@ public class HttpTaskServer {
                         inputStream = exchange.getRequestBody();
                         body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
-                        data = gson.fromJson(body, Map.class);
+                        TaskDto taskDto = gson.fromJson(body, TaskDto.class);
 
-                        if (data.containsKey("id") && data.get("id") != null) {
-                            task = taskManager.updateNameAndDescription(Integer.parseInt(data.get("id")), data.get("name"), data.get("description"));
+                        if (taskDto.getId() != null) {
+                            task = taskManager.updateNameAndDescription(taskDto.getId(), taskDto.getName(), taskDto.getDescription());
                             sendText(exchange, gson.toJson(task), 201);
                         } else {
-                            task = taskManager.createTask(data.get("name"), data.get("description"));
+                            task = taskManager.createTask(taskDto.getName(), taskDto.getDescription());
                             if (task == null) {
                                 sendHasInteractions(exchange, "Задача пересекается с существующими.");
                             } else {
@@ -101,7 +100,12 @@ public class HttpTaskServer {
                 }
 
             } else if (pathParts.length == 3 && pathParts[1].equals("tasks")) {
-                id = Integer.parseInt(pathParts[2]);
+                try {
+                    id = Integer.parseInt(pathParts[2]);
+                } catch (NumberFormatException e) {
+                    sendText(exchange, "Некорректный id: " + pathParts[2], 400);
+                    return;
+                }
 
                 switch (method) {
                     case "GET":
@@ -114,11 +118,7 @@ public class HttpTaskServer {
                         }
 
                         break;
-                    case "POST":
-                        break;
                     case "DELETE":
-                        id = Integer.parseInt(pathParts[2]);
-
                         String result = taskManager.deleteTaskById(id);
 
                         sendText(exchange, result, 200);
@@ -139,7 +139,6 @@ public class HttpTaskServer {
 
     static class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
         private final TaskManager taskManager;
-        // Gson gson = new Gson();
 
         public SubtasksHandler(TaskManager taskManager) {
             this.taskManager = taskManager;
@@ -149,7 +148,6 @@ public class HttpTaskServer {
         public void handle(HttpExchange exchange) throws IOException {
             InputStream inputStream;
             String body;
-            Map<String, String> data;
             Subtask subtask;
             int id;
             String path = exchange.getRequestURI().getPath();
@@ -169,13 +167,13 @@ public class HttpTaskServer {
                         inputStream = exchange.getRequestBody();
                         body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
-                        data = gson.fromJson(body, Map.class);
+                        TaskDto taskDto = gson.fromJson(body, TaskDto.class);
 
-                        if (data.containsKey("id") && data.get("id") != null) {
-                            subtask = (Subtask) taskManager.updateNameAndDescription(Integer.parseInt(data.get("id")), data.get("name"), data.get("description"));
+                        if (taskDto.getId() != null) {
+                            subtask = (Subtask) taskManager.updateNameAndDescription(taskDto.getId(), taskDto.getName(), taskDto.getDescription());
                             sendText(exchange, gson.toJson(subtask), 201);
                         } else {
-                            subtask = taskManager.createSubtask(data.get("name"), data.get("description"), Integer.parseInt(data.get("parentId")));
+                            subtask = taskManager.createSubtask(taskDto.getName(), taskDto.getDescription(), taskDto.getParentId());
                             if (subtask == null) {
                                 sendHasInteractions(exchange, "Подзадача пересекается с существующими.");
                             } else {
@@ -189,7 +187,12 @@ public class HttpTaskServer {
                 }
 
             } else if (pathParts.length == 3 && pathParts[1].equals("subtasks")) {
-                id = Integer.parseInt(pathParts[2]);
+                try {
+                    id = Integer.parseInt(pathParts[2]);
+                } catch (NumberFormatException e) {
+                    sendText(exchange, "Некорректный id: " + pathParts[2], 400);
+                    return;
+                }
 
                 switch (method) {
                     case "GET":
@@ -202,11 +205,7 @@ public class HttpTaskServer {
                         }
 
                         break;
-                    case "POST":
-                        break;
                     case "DELETE":
-                        id = Integer.parseInt(pathParts[2]);
-
                         String result = taskManager.deleteTaskById(id);
 
                         sendText(exchange, result, 200);
@@ -225,7 +224,6 @@ public class HttpTaskServer {
 
     static class EpicsHandler extends BaseHttpHandler implements HttpHandler {
         TaskManager taskManager;
-        // Gson gson = new Gson();
 
         public EpicsHandler(TaskManager taskManager) {
             this.taskManager = taskManager;
@@ -235,7 +233,6 @@ public class HttpTaskServer {
         public void handle(HttpExchange exchange) throws IOException {
             InputStream inputStream;
             String body;
-            Map<String, String> data;
             Epic epic;
             int id;
             String path = exchange.getRequestURI().getPath();
@@ -255,19 +252,20 @@ public class HttpTaskServer {
                         inputStream = exchange.getRequestBody();
                         body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
-                        data = gson.fromJson(body, Map.class);
+                        TaskDto taskDto = gson.fromJson(body, TaskDto.class);
 
-                        if (data.containsKey("id") && data.get("id") != null) {
-                            epic = (Epic) taskManager.updateNameAndDescription(Integer.parseInt(data.get("id")), data.get("name"), data.get("description"));
+                        if (taskDto.getId() != null) {
+                            epic = (Epic) taskManager.updateNameAndDescription(taskDto.getId(), taskDto.getName(), taskDto.getDescription());
                             sendText(exchange, gson.toJson(epic), 201);
                         } else {
-                            epic = taskManager.createEpic(data.get("name"), data.get("description"));
+                            epic = taskManager.createEpic(taskDto.getName(), taskDto.getDescription());
                             if (epic == null) {
                                 sendHasInteractions(exchange, "Подзадача пересекается с существующими.");
                             } else {
                                 sendText(exchange, gson.toJson(epic), 201);
                             }
                         }
+
                         break;
                     default:
                         sendText(exchange, "Запрос не распознан.", 500);
@@ -275,7 +273,12 @@ public class HttpTaskServer {
                 }
 
             } else if (pathParts.length == 3 && pathParts[1].equals("epics")) {
-                id = Integer.parseInt(pathParts[2]);
+                try {
+                    id = Integer.parseInt(pathParts[2]);
+                } catch (NumberFormatException e) {
+                    sendText(exchange, "Некорректный id: " + pathParts[2], 400);
+                    return;
+                }
 
                 switch (method) {
                     case "GET":
@@ -288,11 +291,7 @@ public class HttpTaskServer {
                         }
 
                         break;
-                    case "POST":
-                        break;
                     case "DELETE":
-                        id = Integer.parseInt(pathParts[2]);
-
                         String result = taskManager.deleteTaskById(id);
 
                         sendText(exchange, result, 200);
@@ -303,7 +302,12 @@ public class HttpTaskServer {
                 }
 
             } else if (pathParts.length == 4 && pathParts[1].equals("epics") && pathParts[3].equals("subtasks")) {
-                id = Integer.parseInt(pathParts[2]);
+                try {
+                    id = Integer.parseInt(pathParts[2]);
+                } catch (NumberFormatException e) {
+                    sendText(exchange, "Некорректный id: " + pathParts[2], 400);
+                    return;
+                }
 
                 epic = (Epic) taskManager.getTaskById(id);
 
@@ -323,7 +327,6 @@ public class HttpTaskServer {
 
     static class HistoryHandler extends BaseHttpHandler implements HttpHandler {
         TaskManager taskManager;
-        // Gson gson = new Gson();
 
         public HistoryHandler(TaskManager taskManager) {
             this.taskManager = taskManager;
@@ -333,22 +336,16 @@ public class HttpTaskServer {
         public void handle(HttpExchange exchange) throws IOException {
             String method = exchange.getRequestMethod().toUpperCase();
 
-            switch (method) {
-                case "GET":
-                    List<Task> history = taskManager.getHistory();
+            if (method.equals("GET")) {
+                List<Task> history = taskManager.getHistory();
 
-                    sendText(exchange, gson.toJson(history), 200);
-
-                    break;
-                default:
-                    break;
+                sendText(exchange, gson.toJson(history), 200);
             }
         }
     }
 
     static class PrioritizesHandler extends BaseHttpHandler implements HttpHandler {
         FileBackedTaskManager taskManager;
-        // Gson gson = new Gson();
 
         public PrioritizesHandler(TaskManager taskManager) {
             this.taskManager = (FileBackedTaskManager) taskManager;
@@ -358,15 +355,10 @@ public class HttpTaskServer {
         public void handle(HttpExchange exchange) throws IOException {
             String method = exchange.getRequestMethod().toUpperCase();
 
-            switch (method) {
-                case "GET":
-                    List<Task> history = taskManager.getPrioritizedTasks();
+            if (method.equals("GET")) {
+                List<Task> history = taskManager.getPrioritizedTasks();
 
-                    sendText(exchange, gson.toJson(history), 200);
-
-                    break;
-                default:
-                    break;
+                sendText(exchange, gson.toJson(history), 200);
             }
         }
     }
@@ -386,8 +378,8 @@ public class HttpTaskServer {
         HashMap<Integer, Subtask> result = new HashMap<>();
         for (Map.Entry<Integer, Task> entry : manager.getAllTasks().entrySet()) {
             Task task = entry.getValue();
-            if (task instanceof Subtask) {
-                result.put(entry.getKey(), (Subtask) task);
+            if (task instanceof Subtask subtask) {
+                result.put(entry.getKey(), subtask);
             }
         }
         return result;
@@ -397,8 +389,8 @@ public class HttpTaskServer {
         HashMap<Integer, Epic> result = new HashMap<>();
         for (Map.Entry<Integer, Task> entry : manager.getAllTasks().entrySet()) {
             Task task = entry.getValue();
-            if (task instanceof Epic) {
-                result.put(entry.getKey(), (Epic) task);
+            if (task instanceof Epic epic) {
+                result.put(entry.getKey(), epic);
             }
         }
         return result;

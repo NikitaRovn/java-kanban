@@ -16,6 +16,7 @@ public class BaseHttpHandler {
 
     protected void sendNotFound(HttpExchange h, String text) throws IOException {
         byte[] resp = text.getBytes(StandardCharsets.UTF_8);
+        h.getResponseHeaders().add("Content-Type", "text/plain;charset=utf-8");
         h.sendResponseHeaders(404, resp.length);
         h.getResponseBody().write(resp);
         h.close();
@@ -23,6 +24,7 @@ public class BaseHttpHandler {
 
     protected void sendHasInteractions(HttpExchange h, String text) throws IOException {
         byte[] resp = text.getBytes(StandardCharsets.UTF_8);
+        h.getResponseHeaders().add("Content-Type", "text/plain;charset=utf-8");
         h.sendResponseHeaders(406, resp.length);
         h.getResponseBody().write(resp);
         h.close();
