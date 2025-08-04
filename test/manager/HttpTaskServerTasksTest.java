@@ -18,7 +18,6 @@ import static main.java.manager.HttpTaskServer.gson;
 import static org.junit.jupiter.api.Assertions.*;
 
 class HttpTaskServerTasksTest {
-
     private HttpTaskServer server;
     private TaskManager manager;
 
@@ -58,7 +57,8 @@ class HttpTaskServerTasksTest {
 
         HttpResponse<String> getResponse = client.send(getRequest, HttpResponse.BodyHandlers.ofString());
 
-        Type type = new TypeToken<HashMap<Integer, Task>>() {}.getType();
+        Type type = new TypeToken<HashMap<Integer, Task>>() {
+        }.getType();
         HashMap<Integer, Task> tasks = gson.fromJson(getResponse.body(), type);
 
         assertEquals(1, tasks.size());
