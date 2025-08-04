@@ -10,9 +10,7 @@ import main.java.tasks.Task;
 import main.java.tasks.TaskDto;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,13 +22,13 @@ public class HttpTaskServer {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static void main(String[] args) throws IOException {
-        TaskManager taskManager = Managers.getDefault();
+        FileBackedTaskManager taskManager = (FileBackedTaskManager) Managers.getDefault();
         HttpTaskServer server = new HttpTaskServer(taskManager);
         server.start();
     }
 
 
-    public HttpTaskServer(TaskManager taskManager) throws IOException {
+    public HttpTaskServer(FileBackedTaskManager  taskManager) throws IOException {
         this.port = 8080;
         server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/tasks", new TasksHandler(taskManager));
@@ -50,278 +48,117 @@ public class HttpTaskServer {
         System.out.println("HTTP-сервер остановлен.");
     }
 
-    static class TasksHandler extends BaseHttpHandler implements HttpHandler {
-        private final TaskManager taskManager;
-
+    public static class TasksHandler extends AbstractTaskHandler<Task> {
         public TasksHandler(TaskManager taskManager) {
-            this.taskManager = taskManager;
+            super(taskManager);
         }
 
         @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            InputStream inputStream;
-            String body;
-            Task task;
-            int id;
-            String path = exchange.getRequestURI().getPath();
-            String[] pathParts = path.split("/");
-            String method = exchange.getRequestMethod().toUpperCase();
+        public Map<Integer, Task> getAllTasks() {
+            return HttpTaskServer.getSimpleTasks(taskManager);
+        }
 
-            if (pathParts.length == 2 && pathParts[1].equals("tasks")) {
-                switch (method) {
-                    case "GET":
-                        HashMap<Integer, Task> tasks = getSimpleTasks(taskManager);
-                        String response = gson.toJson(tasks);
+        @Override
+        public Task getTaskById(int id) {
+            return taskManager.getTaskById(id);
+        }
 
-                        sendText(exchange, response, 200);
+        @Override
+        public Task createTask(TaskDto taskDto) {
+            return taskManager.createTask(taskDto.getName(), taskDto.getDescription());
+        }
 
-                        break;
-                    case "POST":
-                        inputStream = exchange.getRequestBody();
-                        body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-
-                        TaskDto taskDto = gson.fromJson(body, TaskDto.class);
-
-                        if (taskDto.getId() != null) {
-                            task = taskManager.updateNameAndDescription(taskDto.getId(), taskDto.getName(), taskDto.getDescription());
-                            sendText(exchange, gson.toJson(task), 201);
-                        } else {
-                            task = taskManager.createTask(taskDto.getName(), taskDto.getDescription());
-                            if (task == null) {
-                                sendHasInteractions(exchange, "Задача пересекается с существующими.");
-                            } else {
-                                sendText(exchange, gson.toJson(task), 201);
-                            }
-                        }
-                        break;
-                    default:
-                        sendText(exchange, "Запрос не распознан.", 500);
-                        break;
-                }
-
-            } else if (pathParts.length == 3 && pathParts[1].equals("tasks")) {
-                try {
-                    id = Integer.parseInt(pathParts[2]);
-                } catch (NumberFormatException e) {
-                    sendText(exchange, "Некорректный id: " + pathParts[2], 400);
-                    return;
-                }
-
-                switch (method) {
-                    case "GET":
-                        task = taskManager.getTaskById(id);
-
-                        if (task == null) {
-                            sendNotFound(exchange, "Задачи с id: " + id + "нет.");
-                        } else {
-                            sendText(exchange, gson.toJson(task), 200);
-                        }
-
-                        break;
-                    case "DELETE":
-                        String result = taskManager.deleteTaskById(id);
-
-                        sendText(exchange, result, 200);
-
-                        break;
-                    default:
-                        break;
-                }
-
-            } else {
-                exchange.sendResponseHeaders(404, 0);
-                exchange.close();
-            }
-
-
+        @Override
+        public Task updateNameAndDescription(TaskDto taskDto) {
+            return taskManager.updateNameAndDescription(taskDto.getId(), taskDto.getName(), taskDto.getDescription());
         }
     }
 
-    static class SubtasksHandler extends BaseHttpHandler implements HttpHandler {
-        private final TaskManager taskManager;
-
+    class SubtasksHandler extends AbstractTaskHandler<Subtask> {
         public SubtasksHandler(TaskManager taskManager) {
-            this.taskManager = taskManager;
+            super(taskManager);
         }
 
         @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            InputStream inputStream;
-            String body;
-            Subtask subtask;
-            int id;
-            String path = exchange.getRequestURI().getPath();
-            String[] pathParts = path.split("/");
-            String method = exchange.getRequestMethod().toUpperCase();
+        protected Map<Integer, Subtask> getAllTasks() {
+            return HttpTaskServer.getSubtasks(taskManager);
+        }
 
-            if (pathParts.length == 2 && pathParts[1].equals("subtasks")) {
-                switch (method) {
-                    case "GET":
-                        HashMap<Integer, Subtask> tasks = getSubtasks(taskManager);
-                        String response = gson.toJson(tasks);
+        @Override
+        protected Subtask getTaskById(int id) {
+            Task task = taskManager.getTaskById(id);
+            return (task instanceof Subtask subtask) ? subtask : null;
+        }
 
-                        sendText(exchange, response, 200);
+        @Override
+        protected Subtask createTask(TaskDto taskDto) {
+            return taskManager.createSubtask(taskDto.getName(), taskDto.getDescription(), taskDto.getParentId());
+        }
 
-                        break;
-                    case "POST":
-                        inputStream = exchange.getRequestBody();
-                        body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-
-                        TaskDto taskDto = gson.fromJson(body, TaskDto.class);
-
-                        if (taskDto.getId() != null) {
-                            subtask = (Subtask) taskManager.updateNameAndDescription(taskDto.getId(), taskDto.getName(), taskDto.getDescription());
-                            sendText(exchange, gson.toJson(subtask), 201);
-                        } else {
-                            subtask = taskManager.createSubtask(taskDto.getName(), taskDto.getDescription(), taskDto.getParentId());
-                            if (subtask == null) {
-                                sendHasInteractions(exchange, "Подзадача пересекается с существующими.");
-                            } else {
-                                sendText(exchange, gson.toJson(subtask), 201);
-                            }
-                        }
-                        break;
-                    default:
-                        sendText(exchange, "Запрос не распознан.", 500);
-                        break;
-                }
-
-            } else if (pathParts.length == 3 && pathParts[1].equals("subtasks")) {
-                try {
-                    id = Integer.parseInt(pathParts[2]);
-                } catch (NumberFormatException e) {
-                    sendText(exchange, "Некорректный id: " + pathParts[2], 400);
-                    return;
-                }
-
-                switch (method) {
-                    case "GET":
-                        subtask = (Subtask) taskManager.getTaskById(id);
-
-                        if (subtask == null) {
-                            sendNotFound(exchange, "Задачи с id: " + id + "нет.");
-                        } else {
-                            sendText(exchange, gson.toJson(subtask), 200);
-                        }
-
-                        break;
-                    case "DELETE":
-                        String result = taskManager.deleteTaskById(id);
-
-                        sendText(exchange, result, 200);
-
-                        break;
-                    default:
-                        break;
-                }
-
-            } else {
-                exchange.sendResponseHeaders(404, 0);
-                exchange.close();
-            }
+        @Override
+        protected Subtask updateNameAndDescription(TaskDto taskDto) {
+            Task task = taskManager.updateNameAndDescription(taskDto.getId(), taskDto.getName(), taskDto.getDescription());
+            return (task instanceof Subtask subtask) ? subtask : null;
         }
     }
 
-    static class EpicsHandler extends BaseHttpHandler implements HttpHandler {
-        TaskManager taskManager;
-
+    class EpicsHandler extends AbstractTaskHandler<Epic> {
         public EpicsHandler(TaskManager taskManager) {
-            this.taskManager = taskManager;
+            super(taskManager);
         }
+
 
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            InputStream inputStream;
-            String body;
-            Epic epic;
-            int id;
             String path = exchange.getRequestURI().getPath();
             String[] pathParts = path.split("/");
-            String method = exchange.getRequestMethod().toUpperCase();
 
-            if (pathParts.length == 2 && pathParts[1].equals("epics")) {
-                switch (method) {
-                    case "GET":
-                        HashMap<Integer, Epic> tasks = getEpics(taskManager);
-                        String response = gson.toJson(tasks);
-
-                        sendText(exchange, response, 200);
-
-                        break;
-                    case "POST":
-                        inputStream = exchange.getRequestBody();
-                        body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-
-                        TaskDto taskDto = gson.fromJson(body, TaskDto.class);
-
-                        if (taskDto.getId() != null) {
-                            epic = (Epic) taskManager.updateNameAndDescription(taskDto.getId(), taskDto.getName(), taskDto.getDescription());
-                            sendText(exchange, gson.toJson(epic), 201);
-                        } else {
-                            epic = taskManager.createEpic(taskDto.getName(), taskDto.getDescription());
-                            if (epic == null) {
-                                sendHasInteractions(exchange, "Подзадача пересекается с существующими.");
-                            } else {
-                                sendText(exchange, gson.toJson(epic), 201);
-                            }
-                        }
-
-                        break;
-                    default:
-                        sendText(exchange, "Запрос не распознан.", 500);
-                        break;
-                }
-
-            } else if (pathParts.length == 3 && pathParts[1].equals("epics")) {
-                try {
-                    id = Integer.parseInt(pathParts[2]);
-                } catch (NumberFormatException e) {
-                    sendText(exchange, "Некорректный id: " + pathParts[2], 400);
-                    return;
-                }
-
-                switch (method) {
-                    case "GET":
-                        epic = (Epic) taskManager.getTaskById(id);
-
-                        if (epic == null) {
-                            sendNotFound(exchange, "Задачи с id: " + id + " нет.");
-                        } else {
-                            sendText(exchange, gson.toJson(epic), 200);
-                        }
-
-                        break;
-                    case "DELETE":
-                        String result = taskManager.deleteTaskById(id);
-
-                        sendText(exchange, result, 200);
-
-                        break;
-                    default:
-                        break;
-                }
-
-            } else if (pathParts.length == 4 && pathParts[1].equals("epics") && pathParts[3].equals("subtasks")) {
-                try {
-                    id = Integer.parseInt(pathParts[2]);
-                } catch (NumberFormatException e) {
-                    sendText(exchange, "Некорректный id: " + pathParts[2], 400);
-                    return;
-                }
-
-                epic = (Epic) taskManager.getTaskById(id);
-
-                if (epic == null) {
-                    sendNotFound(exchange, "Эпика с id: " + id + " нет.");
-                } else {
-                    Set<Integer> subtasks = epic.getSubtasks();
-
-                    sendText(exchange, gson.toJson(subtasks), 200);
-                }
+            if (pathParts.length == 4 && pathParts[1].equals("epics") && pathParts[3].equals("subtasks")) {
+                handleEpicSubtasks(exchange, pathParts[2]);
             } else {
-                exchange.sendResponseHeaders(404, 0);
-                exchange.close();
+                super.handle(exchange);
             }
+        }
+
+        private void handleEpicSubtasks(HttpExchange exchange, String idParam) throws IOException {
+            int id;
+            try {
+                id = Integer.parseInt(idParam);
+            } catch (NumberFormatException e) {
+                sendText(exchange, "Некорректный id: " + idParam, 400);
+                return;
+            }
+
+            Epic epic = getTaskById(id);
+
+            if (epic == null) {
+                sendNotFound(exchange, "Эпика с id: " + id + " нет.");
+            } else {
+                Set<Integer> subtaskIds = epic.getSubtasks() != null ? epic.getSubtasks() : Set.of();
+                sendText(exchange, gson.toJson(subtaskIds), 200);
+            }
+        }
+
+        @Override
+        protected Map<Integer, Epic> getAllTasks() {
+            return HttpTaskServer.getEpics(taskManager);
+        }
+
+        @Override
+        protected Epic getTaskById(int id) {
+            Task task = taskManager.getTaskById(id);
+            return (task instanceof Epic epic) ? epic : null;
+        }
+
+        @Override
+        protected Epic createTask(TaskDto taskDto) {
+            return taskManager.createEpic(taskDto.getName(), taskDto.getDescription());
+        }
+
+        @Override
+        protected Epic updateNameAndDescription(TaskDto taskDto) {
+            Task task = taskManager.updateNameAndDescription(taskDto.getId(), taskDto.getName(), taskDto.getDescription());
+            return (task instanceof Epic epic) ? epic : null;
         }
     }
 
@@ -347,8 +184,8 @@ public class HttpTaskServer {
     static class PrioritizesHandler extends BaseHttpHandler implements HttpHandler {
         FileBackedTaskManager taskManager;
 
-        public PrioritizesHandler(TaskManager taskManager) {
-            this.taskManager = (FileBackedTaskManager) taskManager;
+        public PrioritizesHandler(FileBackedTaskManager  taskManager) {
+            this.taskManager = taskManager;
         }
 
         @Override
