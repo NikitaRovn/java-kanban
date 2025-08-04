@@ -217,9 +217,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public Task getTaskById(int id) {
         Task task = super.getTaskById(id);
         save();
-        if (task == null) {
-            throw new NotFoundException("Задача с id " + id + " не найдена");
-        }
+//        if (task == null) {
+//            throw new NotFoundException("Задача с id " + id + " не найдена");
+//        }
         return task;
     }
 
