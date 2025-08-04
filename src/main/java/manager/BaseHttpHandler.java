@@ -29,12 +29,4 @@ public class BaseHttpHandler {
         h.getResponseBody().write(resp);
         h.close();
     }
-
-    protected void sendMethodNotAllowed(HttpExchange h) throws IOException {
-        byte[] resp = "Метод не поддерживается.".getBytes(StandardCharsets.UTF_8);
-        h.getResponseHeaders().add("Content-Type", "text/plain;charset=utf-8");
-        h.sendResponseHeaders(405, resp.length);
-        h.getResponseBody().write(resp);
-        h.close();
-    }
 }
