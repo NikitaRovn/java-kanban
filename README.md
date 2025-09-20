@@ -1,2 +1,6 @@
-# java-kanban
-Repository for homework project.
+<Картиночка>
+Всякие  
+Тестовые  
+Запросы  
+К  
+БД  
